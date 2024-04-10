@@ -37,3 +37,5 @@ v21.9.0
 - Implement Magenta TV 2.0
 v21.9.1
 - Fix EPG bug
+v21.9.2
+- Personal Channel list

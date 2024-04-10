@@ -16,7 +16,7 @@ static const int TERMINAL_ANDROIDMOBILE = 3;
 struct Magenta2Parameter
 {
   std::string config_group_id;
-  std::string device_model;
+  std::string app_model;
   std::string device_name;
   std::string app_name;
   std::string app_version;
@@ -40,7 +40,9 @@ static const Magenta2Parameter Magenta2Parameters[4] = {{
                                                 //Magenta TV Stick
                                                 "atv-launcher",
                                                 "DT:ATV-Launcher",
+//                                                "OTT:ATVStick:ATVG1",
                                                 "MagentaTV Stick",
+//                                                "ATV_STICK",
                                                 "MagentaTV",
                                                 "104682",
                                                 "API level 30",

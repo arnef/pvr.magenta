@@ -78,7 +78,7 @@
         </setting>
         <setting id="ismagentatwo" type="boolean" label="30055">
           <level>0</level>
-          <default>false</default>
+          <default>true</default>
           <control type="toggle" />
         </setting>
         <setting id="customchannels" type="boolean" label="30023">

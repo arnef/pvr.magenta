@@ -334,7 +334,11 @@ bool CPVRMagenta2::Bootstrap()
     m_deviceTokensUrl = Utils::JsonStringOrEmpty(baseSettings, "deviceTokensUrl");
     m_authClient->SetSam3Url(Utils::JsonStringOrEmpty(baseSettings, "sam3Url"));
     m_authClient->SetSam3ClientId(Utils::JsonStringOrEmpty(baseSettings, "sam3ClientId"));
-    m_authClient->SetLineAuthUrl(Utils::JsonStringOrEmpty(baseSettings, "lineAuthUrl"));
+    m_authClient->SetLineAuthUrl(Utils::JsonStringOrEmpty(baseSettings, "lineAuthUrl") + "?" +
+                                "%24deviceModel=" + m_deviceModel + "&" +
+                                "redirect=false&" +
+                                "%24theme=" + Utils::JsonStringOrEmpty(baseSettings, "themeId") + "&" +
+                                "%24profile=" + Utils::JsonStringOrEmpty(baseSettings, "profileName"));
     m_authClient->SetTaaUrl(Utils::JsonStringOrEmpty(baseSettings, "taaUrl"));
     if (doc.HasMember("dcm"))
     {
@@ -399,7 +403,7 @@ bool CPVRMagenta2::DeviceManifest()
   kodi::Log(ADDON_LOG_DEBUG, "function call: [%s]", __FUNCTION__);
 
   std::string url = m_deviceTokensUrl +
-                    "?model=" + Utils::UrlEncode(Magenta2Parameters[m_platform].device_model) +
+                    "?model=" + Utils::UrlEncode(Magenta2Parameters[m_platform].app_model) +
                     "&deviceId=" + m_deviceId +
                     "&appname=" + Magenta2Parameters[m_platform].app_name +
                     "&appVersion=" + Magenta2Parameters[m_platform].app_version +
@@ -439,6 +443,7 @@ bool CPVRMagenta2::DeviceManifest()
     GetParameter("widevineLicenseAcquisitionURL", m_widevineLicenseAcquisitionUrl);
     GetParameter("mpxBasicUrlEntitledChannelsFeed", m_entitledChannelsFeed);
     GetParameter("mpxBasicUrlSelectorService", m_basicUrlSelectorService);
+    GetParameter("mpxUserProfileUrl", m_userProfileUrl);
     replace(m_entitledChannelsFeed, "{{MpxAccountPid}}", m_accountPid);
     m_liveTvCategoryFeed = "https://feed.media.theplatform.eu/f/{MpxAccountPid}/{MpxAccountPid}-livetv-categories/Category";
     GetParameter("mpxPvrBaseUrl", m_pvrBaseUrl);
@@ -476,6 +481,7 @@ bool CPVRMagenta2::Manifest()
   m_accountPid = Utils::JsonStringOrEmpty(mpx, "accountPid");
   m_locationIdUri = Utils::JsonStringOrEmpty(mpx, "locationIdUri");
   m_pvrBaseUrl = Utils::JsonStringOrEmpty(mpx, "pvrBaseUrl");
+  m_userProfileUrl = Utils::JsonStringOrEmpty(mpx, "userProfileUrl");
   m_basicUrlGetApplicableDistributionRights = Utils::JsonStringOrEmpty(mpx, "basicUrlGetApplicableDistributionRights");
   m_basicUrlSelectorService = Utils::JsonStringOrEmpty(mpx, "basicUrlSelectorService");
   if (mpx.HasMember("feeds"))
@@ -666,6 +672,64 @@ bool CPVRMagenta2::GetFeed(/*const int& feed,*/ const int& maxEntries, /*const s
   return true;
 }
 
+void CPVRMagenta2::SetChannelNumber(const std::string& id, const int& number)
+{
+  for (auto& thisChannel : m_channels)
+  {
+    if (thisChannel.stationsId == id)
+    {
+      thisChannel.iChannelNumber = number;
+      kodi::Log(ADDON_LOG_DEBUG, "Setting new personal channel number %i for Id: %s", number, thisChannel.strChannelName.c_str());
+    }
+  }
+}
+
+bool CPVRMagenta2::GetUserList(const std::string& context)
+{
+  kodi::Log(ADDON_LOG_DEBUG, "function call: [%s]", __FUNCTION__);
+
+  if (m_userProfileUrl.empty())
+    return false;
+
+  std::string url = m_userProfileUrl + "/data/UserList?form=cjson&schema=1.3";
+
+  if (!context.empty())
+  {
+    url += "&byContext=" + context;
+  }
+
+  rapidjson::Document doc;
+  if (!GetPostJson(url, "", doc)) {
+    return false;
+  }
+
+  if (!doc.HasMember("entries"))
+  {
+    kodi::Log(ADDON_LOG_ERROR, "Failed to get UserList");
+    return false;
+  }
+
+  const rapidjson::Value& entries = doc["entries"];
+  for (rapidjson::SizeType i = 0; i < entries.Size(); i++)
+  {
+    if (entries[i].HasMember("items"))
+    {
+      const rapidjson::Value& items = entries[i]["items"];
+      std::string title = Utils::JsonStringOrEmpty(entries[i], "title");
+      if (title == "LiveTvPersonalChannelList")
+      {
+        for (rapidjson::SizeType j = 0; j < items.Size(); j++)
+        {
+          SetChannelNumber(Utils::JsonStringOrEmpty(items[j], "aboutId"), Utils::JsonIntOrZero(items[j], "index"));
+        }
+      }
+
+    }
+  }
+
+  return true;
+}
+
 CPVRMagenta2::CPVRMagenta2(CSettings* settings, HttpClient* httpclient):
   m_settings(settings),
   m_httpClient(httpclient)
@@ -730,6 +794,7 @@ CPVRMagenta2::CPVRMagenta2(CSettings* settings, HttpClient* httpclient):
   replace(m_allChannelSchedulesFeed, "{{MpxAccountPid}}", m_accountPid);
   replace(m_allProgramsFeedUrl, "{{MpxAccountPid}}", m_accountPid);
   GetMyGenres();
+  GetUserList("");
 }
 
 CPVRMagenta2::~CPVRMagenta2()
@@ -1164,12 +1229,12 @@ void CPVRMagenta2::AddEPGEntry(const int& channelNumber, const rapidjson::Value&
   tag.SetUniqueChannelId(static_cast<unsigned int>(channelNumber));
   tag.SetTitle(Utils::JsonStringOrEmpty(epgItem, "title"));
   std::string title = Utils::JsonStringOrEmpty(epgItem, "title");
-  kodi::Log(ADDON_LOG_DEBUG, "Adding EPG item: %s", title.c_str());
+//  kodi::Log(ADDON_LOG_DEBUG, "Adding EPG item: %s", title.c_str());
 
   tag.SetPlot(Utils::JsonStringOrEmpty(epgItem, "description"));
   tag.SetPlotOutline(Utils::JsonStringOrEmpty(epgItem, "shortDescription"));
 
-  if (epgItem.HasMember("thumbnails"))
+  if (epgItem.HasMember("thumbnails") && epgItem["thumbnails"].GetType() != 0)
   {
     const rapidjson::Value& thumbnails = epgItem["thumbnails"];
     rapidjson::Value::ConstMemberIterator itr = thumbnails.MemberBegin();
@@ -1226,7 +1291,7 @@ void CPVRMagenta2::AddEPGEntry(const int& channelNumber, const rapidjson::Value&
       tag.SetIMDBNumber(imdbNumber);
   }
 
-  if (epgItem.HasMember("credits")) {
+  if (epgItem.HasMember("credits") && epgItem["credits"].GetType() != 0) {
     const rapidjson::Value& credits = epgItem["credits"];
     std::string cast = "";
     std::string director = "";

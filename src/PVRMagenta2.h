@@ -190,6 +190,7 @@ private:
                               std::string& strStringValue);
 
   bool GetMyGenres();
+  bool GetUserList(const std::string& context);
   bool GetPostJson(const std::string& url, const std::string& body, rapidjson::Document& doc);
   bool GetSmil(const std::string& url, tinyxml2::XMLDocument& smilDoc);
   bool GetStreamParameters(const std::string& url, std::string& src, std::string& releasePid);
@@ -199,6 +200,7 @@ private:
   bool Manifest();
   bool GetDistributionRights();
   bool GetCategories();
+  void SetChannelNumber(const std::string& id, const int& number);
   std::string GetNgissUrl(const std::string& url, const int& width, const int& height);
   void AddChannelEntry(const rapidjson::Value& entry);
   void AddGroupChannel(const std::string& id, const int& channelUid);
@@ -243,6 +245,7 @@ private:
   std::string m_accountId;
   std::string m_locationIdUri;
   std::string m_mpxAccountUri;
+  std::string m_userProfileUrl;
   int m_platform;
   Magenta2Lock m_currentLock;
   Magenta2Ngiss m_ngiss;

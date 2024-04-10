@@ -131,6 +131,7 @@ std::string HttpClient::HttpRequest(const std::string& action, const std::string
     curl.AddHeader("Accept-Ranges", "none");
     if (((url.find("license") != std::string::npos) ||
          (url.find("link") != std::string::npos) ||
+         (url.find("data.userprofile.community.theplatform.eu") != std::string::npos) ||
          (url.find("npvr-audience") != std::string::npos)) &&
          (m_authClient != nullptr)) {
 //      curl.AddHeader("Authorization", "Basic " + m_settings->GetMagenta2PersonaToken());
@@ -162,6 +163,13 @@ std::string HttpClient::HttpRequest(const std::string& action, const std::string
       curl.AddHeader("x-stbserialnumber", m_settings->GetMagentaDeviceID());
       curl.AddHeader("dt-session-id", m_sessionId);
       curl.AddHeader("dt-call-id", Utils::CreateUUID());
+    }
+    if (url.find(".theplatform.eu") != std::string::npos ||
+        url.find(".yo-digital.com") != std::string::npos ||
+        url.find(".theplatform.com") != std::string::npos) {
+      std::string cid = m_sessionId + "::" + Utils::CreateUUID();
+      curl.AddHeader("CID", cid);
+//      kodi::Log(ADDON_LOG_DEBUG, "CID: %s", cid.c_str());
     }
   }
 
