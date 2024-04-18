@@ -559,8 +559,9 @@ void CPVRMagenta2::AddChannelEntry(const rapidjson::Value& entry)
   if (m_settings->HideUnsubscribed())
     channel.isHidden = true;
   else
-  channel.isHidden = false;
+    channel.isHidden = false;
   channel.bRadio = false;
+  channel.isFavorite = false;
   const rapidjson::Value& stations = entry["stations"];
   for (rapidjson::Value::ConstMemberIterator itr = stations.MemberBegin(); itr != stations.MemberEnd(); ++itr)
   {
@@ -679,7 +680,19 @@ void CPVRMagenta2::SetChannelNumber(const std::string& id, const int& number)
     if (thisChannel.stationsId == id)
     {
       thisChannel.iChannelNumber = number;
-      kodi::Log(ADDON_LOG_DEBUG, "Setting new personal channel number %i for Id: %s", number, thisChannel.strChannelName.c_str());
+      kodi::Log(ADDON_LOG_DEBUG, "Setting new personal channel number %i for channel: %s", number, thisChannel.strChannelName.c_str());
+    }
+  }
+}
+
+void CPVRMagenta2::SetFavorite(const std::string& id, const int& number)
+{
+  for (auto& thisChannel : m_channels)
+  {
+    if (thisChannel.stationsId == id)
+    {
+      thisChannel.isFavorite = true;
+      kodi::Log(ADDON_LOG_DEBUG, "Making %s a favorite channel", thisChannel.strChannelName.c_str());
     }
   }
 }
@@ -723,7 +736,13 @@ bool CPVRMagenta2::GetUserList(const std::string& context)
           SetChannelNumber(Utils::JsonStringOrEmpty(items[j], "aboutId"), Utils::JsonIntOrZero(items[j], "index"));
         }
       }
-
+      if (title == "LiveTvFavoriteChannelList")
+      {
+        for (rapidjson::SizeType j = 0; j < items.Size(); j++)
+        {
+          SetFavorite(Utils::JsonStringOrEmpty(items[j], "aboutId"), Utils::JsonIntOrZero(items[j], "index"));
+        }
+      }
     }
   }
 
@@ -1090,7 +1109,7 @@ PVR_ERROR CPVRMagenta2::GetChannels(bool bRadio, kodi::addon::PVRChannelsResultS
   for (const auto& channel : m_channels)
   {
 
-    if ((channel.bRadio == bRadio) && (!m_settings->IsHiddenDeactivated() || !channel.isHidden))
+    if ((channel.bRadio == bRadio) && (!m_settings->IsHiddenDeactivated() || !channel.isHidden) && (!m_settings->IsOnlyFavorites() || channel.isFavorite))
     {
       kodi::addon::PVRChannel kodiChannel;
 

@@ -40,6 +40,7 @@ public:
   const bool PreferHigherResolution() const { return m_higherresolution; }
   const bool IsGroupsenabled() const  { return m_enablegroups; }
   const bool IsMagenta2() const { return m_ismagenta2; }
+  const bool IsOnlyFavorites() const { return m_onlyfavorites; }
 
 private:
   std::string m_epgToken;
@@ -63,4 +64,5 @@ private:
   bool m_higherresolution;
   bool m_enablegroups;
   bool m_ismagenta2;
+  bool m_onlyfavorites;
 };

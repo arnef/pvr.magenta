@@ -106,6 +106,7 @@ struct Magenta2Channel
   std::vector<std::string> distributionRights;
   bool isHidden;
   bool isHd;
+  bool isFavorite;
   std::vector<Magenta2Picture> thumbnails;
 //  bool isEntitled;
 };
@@ -201,6 +202,7 @@ private:
   bool GetDistributionRights();
   bool GetCategories();
   void SetChannelNumber(const std::string& id, const int& number);
+  void SetFavorite(const std::string& id, const int& number);
   std::string GetNgissUrl(const std::string& url, const int& width, const int& height);
   void AddChannelEntry(const rapidjson::Value& entry);
   void AddGroupChannel(const std::string& id, const int& channelUid);

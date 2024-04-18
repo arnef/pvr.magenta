@@ -171,3 +171,7 @@ msgstr ""
 msgctxt "#30060"
 msgid "Android Mobile"
 msgstr ""
+
+msgctxt "#30061"
+msgid "Load only favorite channels"
+msgstr ""

@@ -39,3 +39,5 @@ v21.9.1
 - Fix EPG bug
 v21.9.2
 - Personal Channel list
+v21.9.3
+- Favorite Channel list

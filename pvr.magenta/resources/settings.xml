@@ -96,6 +96,11 @@
           <default>false</default>
           <control type="toggle" />
         </setting>
+        <setting id="isonlyfavorites" type="boolean" label="30061">
+          <level>0</level>
+          <default>false</default>
+          <control type="toggle" />
+        </setting>
         <setting id="deactivatehidden" type="boolean" label="30026">
           <level>0</level>
           <default>false</default>
