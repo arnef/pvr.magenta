@@ -41,3 +41,5 @@ v21.9.2
 - Personal Channel list
 v21.9.3
 - Favorite Channel list
+v21.9.4
+- Protect against empty thumbnails

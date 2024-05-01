@@ -1257,7 +1257,8 @@ void CPVRMagenta2::AddEPGEntry(const int& channelNumber, const rapidjson::Value&
   {
     const rapidjson::Value& thumbnails = epgItem["thumbnails"];
     rapidjson::Value::ConstMemberIterator itr = thumbnails.MemberBegin();
-    ++itr;
+    if (itr != thumbnails.MemberEnd())
+      ++itr;
     if (itr != thumbnails.MemberEnd())
     {
       const rapidjson::Value& thumbnailsItem = (itr->value);
