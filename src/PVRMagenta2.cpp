@@ -301,6 +301,16 @@ bool CPVRMagenta2::HideDuplicateChannels()
             kodi::Log(ADDON_LOG_DEBUG, "Hiding %s %i %i", (*it2).strChannelName.c_str(), (*it2).iChannelNumber, (*it2).iUniqueId);
           }
         }
+        if ((*it).dtquality == "UHD")
+        {
+          (*it).isHidden = true;
+          (*it2).isHidden = false;
+        }
+        if ((*it2).dtquality == "UHD")
+        {
+          (*it2).isHidden = true;
+          (*it).isHidden = false;
+        }
       }
     }
   }
@@ -569,6 +579,7 @@ void CPVRMagenta2::AddChannelEntry(const rapidjson::Value& entry)
     channel.stationsId = Utils::JsonStringOrEmpty(stationItem, "id");
     channel.strChannelName = Utils::JsonStringOrEmpty(stationItem, "title");
     channel.isHd = Utils::JsonBoolOrFalse(stationItem, "isHd");
+    channel.dtquality = Utils::JsonStringOrEmpty(stationItem, "dt$quality");
     const rapidjson::Value& mediaPids = stationItem["era$mediaPids"];
     channel.mediaPath = Utils::JsonStringOrEmpty(mediaPids, "urn:theplatform:tv:location:any");
     if (stationItem.HasMember("thumbnails"))

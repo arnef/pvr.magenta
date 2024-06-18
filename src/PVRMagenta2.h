@@ -104,6 +104,7 @@ struct Magenta2Channel
   std::string strIconPath;
   std::string mediaPath;
   std::vector<std::string> distributionRights;
+  std::string dtquality;
   bool isHidden;
   bool isHd;
   bool isFavorite;
